@@ -3,13 +3,13 @@ import { CreateHeroDto } from './dto/create-hero.dto';
 import { UpdateHeroDto } from './dto/update-hero.dto';
 
 @Injectable()
-export class HerosService {
+export class HeroService {
   create(createHeroDto: CreateHeroDto) {
     return 'This action adds a new hero';
   }
 
   findAll() {
-    return `This action returns all heros`;
+    return `This action returns all hero`;
   }
 
   findOne(id: number) {
