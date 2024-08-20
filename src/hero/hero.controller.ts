@@ -11,6 +11,7 @@ import {
   Req,
   Header,
   Redirect,
+  HttpException,
 } from '@nestjs/common';
 import { HeroService } from './hero.service';
 import { CreateHeroDto } from './dto/create-hero.dto';
@@ -58,8 +59,7 @@ export class HeroController {
       //   status: 201,
       //   data: request.body,
       // }; // Return dengan library Nest
-      const { id, name, description } = request.body;
-      heroes.push({ id, name, description });
+      heroes.push(createHeroDto);
 
       return response
         .status(201)
@@ -78,8 +78,17 @@ export class HeroController {
   @Get(':id')
   findOne(@Param('id') id: string, @Res({ passthrough: true }) response) {
     //jadi di response kita harus menuliskan Passthrough
-    response.cookie('key', 'value'); // Ini kan make library Express
-    return `Hero ${id}`; // Tapi return valuenya pake library Nest
+    // response.cookie('key', 'value'); // Ini kan make library Express
+    const hero = heroes.find((hero) => hero.id === +id);
+
+    if (!hero) {
+      throw new HttpException('Hero not found', 404);
+    }
+
+    return {
+      status: 200,
+      data: hero,
+    }; // Tapi return valuenya pake library Nest
   }
 
   @Patch(':id')
@@ -89,6 +98,16 @@ export class HeroController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.heroService.remove(+id);
+    const hero = heroes.find((hero) => hero.id === +id);
+    if (!hero) {
+      throw new HttpException('Hero not found', 404);
+    }
+
+    heroes.splice(heroes.indexOf(hero), 1);
+    return {
+      status: 200,
+      message: 'Hero deleted',
+      data: heroes,
+    };
   }
 }
