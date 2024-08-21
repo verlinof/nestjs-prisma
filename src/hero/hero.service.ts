@@ -1,26 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateHeroDto } from './dto/create-hero.dto';
 import { UpdateHeroDto } from './dto/update-hero.dto';
+import { Hero } from './entities/hero.entity';
 
 @Injectable()
 export class HeroService {
+  private readonly heroes: Hero[] = [
+    {
+      id: 1,
+      name: 'Spiderman',
+      description: 'Superhero',
+    },
+    {
+      id: 2,
+      name: 'Ironman',
+      description: 'Superhero',
+    },
+    {
+      id: 3,
+      name: 'Hulk',
+      description: 'Superhero',
+    },
+  ];
+
   create(createHeroDto: CreateHeroDto) {
-    return 'This action adds a new hero';
+    return this.heroes.push(createHeroDto);
   }
 
   findAll() {
-    return `This action returns all hero`;
+    return this.heroes;
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} hero`;
+    return this.heroes.find((hero) => hero.id === id);
   }
 
   update(id: number, updateHeroDto: UpdateHeroDto) {
-    return `This action updates a #${id} hero`;
+    const hero = this.heroes.filter((hero) => {
+      if (hero.id === +id) {
+        hero.name = updateHeroDto.name;
+        hero.description = updateHeroDto.description;
+      }
+    });
+    return hero;
   }
 
   remove(id: number) {
-    return `This action removes a #${id} hero`;
+    const hero = this.heroes.find((hero) => hero.id === +id);
+    if (!hero) {
+      throw new HttpException('Hero not found', 404);
+    }
+    this.heroes.splice(this.heroes.indexOf(hero), 1);
+    return this.heroes;
   }
 }

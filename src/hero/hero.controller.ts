@@ -16,25 +16,6 @@ import {
 import { HeroService } from './hero.service';
 import { CreateHeroDto } from './dto/create-hero.dto';
 import { UpdateHeroDto } from './dto/update-hero.dto';
-import { PassThrough } from 'stream';
-
-const heroes = [
-  {
-    id: 1,
-    name: 'Spiderman',
-    description: 'Superhero',
-  },
-  {
-    id: 2,
-    name: 'Ironman',
-    description: 'Superhero',
-  },
-  {
-    id: 3,
-    name: 'Hulk',
-    description: 'Superhero',
-  },
-];
 
 @Controller('hero')
 export class HeroController {
@@ -43,7 +24,7 @@ export class HeroController {
   @Get()
   @HttpCode(200) //Contoh decorator untuk custom httpcode
   index(@Res() response) {
-    return response.json({ data: heroes }); //Response dengan @Res
+    return response.json({ data: this.heroService.findAll() }); //Response dengan @Res
   }
 
   @Post()
@@ -59,7 +40,7 @@ export class HeroController {
       //   status: 201,
       //   data: request.body,
       // }; // Return dengan library Nest
-      heroes.push(createHeroDto);
+      this.heroService.create(createHeroDto);
 
       return response
         .status(201)
@@ -79,7 +60,7 @@ export class HeroController {
   findOne(@Param('id') id: string, @Res({ passthrough: true }) response) {
     //jadi di response kita harus menuliskan Passthrough
     // response.cookie('key', 'value'); // Ini kan make library Express
-    const hero = heroes.find((hero) => hero.id === +id);
+    const hero = this.heroService.findOne(+id);
 
     if (!hero) {
       throw new HttpException('Hero not found', 404);
@@ -93,17 +74,22 @@ export class HeroController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateHeroDto: UpdateHeroDto) {
-    return this.heroService.update(+id, updateHeroDto);
-  }
+    const hero = this.heroService.update(+id, updateHeroDto);
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    const hero = heroes.find((hero) => hero.id === +id);
     if (!hero) {
       throw new HttpException('Hero not found', 404);
     }
 
-    heroes.splice(heroes.indexOf(hero), 1);
+    return {
+      status: 200,
+      message: 'Hero updated',
+      data: hero,
+    };
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    const heroes = this.heroService.remove(+id);
     return {
       status: 200,
       message: 'Hero deleted',
